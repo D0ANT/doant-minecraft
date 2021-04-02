@@ -1,0 +1,20 @@
+[move_key]
+
+front = w
+east = a
+west = s
+behind = d
+jump = space
+
+[player_setting]
+
+speed = 5
+x = 0
+y = 0
+z = 0
+gravity = 1
+fov = 90
+mouse_locked = False
+jump_height = 2
+jump_duration = 2
+mouse_sensitivity = 100

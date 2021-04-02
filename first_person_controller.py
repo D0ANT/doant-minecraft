@@ -1,42 +1,69 @@
 from ursina import *
+import configparser
 
+#콘피그파일 읽기 설정
+section = "move_key"
+section_1 = "player_setting"
+conf_file = "config.txt"
+
+config = configparser.ConfigParser()
+config.read(conf_file)
+
+#조작키 콘피그 읽어들이기 (section)
+front_key = config.get(section, 'front')
+east_key = config.get(section, 'east')
+west_key = config.get(section, 'west')
+behind_key = config.get(section, 'behind')
+jump_key = config.get(section, 'jump')
+
+#플레이어 기본설정 콘피그 읽어들이기 (section_1)
+speed = config.get(section_1, 'speed')
+x = config.get(section_1, 'x')
+y = config.get(section_1, 'y')
+z = config.get(section_1, 'z')
+gravity = config.get(section_1, 'gravity')
+fov = config.get(section_1, 'fov')
+m_lock = config.get(section_1, 'mouse_locked')
+j_height = config.get(section_1, 'jump_height')
+j_dur = config.get(section_1, 'jump_duration')
+m_sensitivity =  config.get(section_1, 'mouse_sensitivity')
 
 class FirstPersonController(Entity):
     def __init__(self, **kwargs):
-        super().__init__()
-        self.speed = 5
+        super().__init__()#플레이어 셋팅 {
+        self.speed = int(speed)
         self.origin_y = -.5
         self.camera_pivot = Entity(parent=self, y=2)
         self.cursor = Entity(parent=camera.ui, model='quad', color=color.pink, scale=.008, rotation_z=45)
 
         camera.parent = self.camera_pivot
-        camera.position = (0,0,0) #플레이어 좌표에 대한 화면 좌표 설정
+        camera.position = (int(x),int(y),int(z)) #플레이어 좌표에 대한 화면 좌표 설정
         camera.rotation = (0,0,0) # 화면 회전 설정 
-        camera.fov = 90
-        mouse.locked = True
-        self.mouse_sensitivity = Vec2(40, 40)
+        camera.fov = int(fov)
+        mouse.locked = str(m_lock) #마우스 움직임 고정 여부 설정
+        self.mouse_sensitivity = Vec2(int(m_sensitivity), int(m_sensitivity)) #마우스 감도 설정
 
         self.gravity = 1
         self.grounded = False
-        self.jump_height = 2 # 점프 높이 설정
-        self.jump_duration = .3 # 점프할때 공중에 머무는 시간 설정
+        self.jump_height = int(j_height) # 점프 높이 설정
+        self.jump_duration = int(j_dur)/10 # 점프할때 공중에 머무는 시간 설정
         self.jumping = False
         self.air_time = 0
-
+        #}플레이어셋팅
 
         for key, value in kwargs.items():
             setattr(self, key ,value)
 
 
     def update(self):
-        self.rotation_y += mouse.velocity[0] * self.mouse_sensitivity[1] * 0.876 #카메라 회전 위아래
+        self.rotation_y += mouse.velocity[0] * self.mouse_sensitivity[1] #카메라 회전 위아래
 
-        self.camera_pivot.rotation_x -= mouse.velocity[1] * self.mouse_sensitivity[0] * 0.876 #카메라 회전 좌우
+        self.camera_pivot.rotation_x -= mouse.velocity[1] * self.mouse_sensitivity[0] #카메라 회전 좌우
         self.camera_pivot.rotation_x= clamp(self.camera_pivot.rotation_x, -90, 90)
 
         self.direction = Vec3(
-            self.forward * (held_keys['w'] - held_keys['s'])
-            + self.right * (held_keys['d'] - held_keys['a'])
+            self.forward * (held_keys[str(front_key)] - held_keys[str(west_key)]) #앞뒤 이동키
+            + self.right * (held_keys[str(behind_key)] - held_keys[str(east_key)]) #좌우 이동키
             ).normalized()
 
         origin = self.world_position + (self.up*.5)
@@ -46,7 +73,7 @@ class FirstPersonController(Entity):
 
 
         if self.gravity:
-            # # gravity
+            #중력 설정
             ray = raycast(self.world_position+(0,2,0), self.down, ignore=(self,))
             # ray = boxcast(self.world_position+(0,2,0), self.down, ignore=(self,))
 
@@ -67,7 +94,7 @@ class FirstPersonController(Entity):
 
 
     def input(self, key): #키 입력
-        if key == 'space':
+        if key == str(jump_key):
             self.jump()
 
     def jump(self): #점프 함수
@@ -90,7 +117,7 @@ class FirstPersonController(Entity):
 
 
 if __name__ == '__main__':
-    from ursina.prefabs.first_person_controller import FirstPersonController
+    from first_person_controller import FirstPersonController
     # window.vsync = False
     app = Ursina()
     # Sky(color=color.gray)
