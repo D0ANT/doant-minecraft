@@ -1,6 +1,9 @@
 from ursina import *
 import configparser
 
+#변수
+lock = 0
+
 #콘피그파일 읽기 설정
 section = "move_key"
 section_1 = "player_setting"
@@ -27,6 +30,7 @@ m_lock = config.get(section_1, 'mouse_locked')
 j_height = config.get(section_1, 'jump_height')
 j_dur = config.get(section_1, 'jump_duration')
 m_sensitivity =  config.get(section_1, 'mouse_sensitivity')
+print(m_lock)
 
 class FirstPersonController(Entity):
     def __init__(self, **kwargs):
@@ -40,7 +44,12 @@ class FirstPersonController(Entity):
         camera.position = (int(x),int(y),int(z)) #플레이어 좌표에 대한 화면 좌표 설정
         camera.rotation = (0,0,0) # 화면 회전 설정 
         camera.fov = int(fov)
-        mouse.locked = str(m_lock) #마우스 움직임 고정 여부 설정
+        if m_lock == "False":
+            lock = 0
+            mouse.locked = False #마우스 움직임 고정 여부 설정
+        elif m_lock == "True":
+            lock = 1
+            mouse.locked = True 
         self.mouse_sensitivity = Vec2(int(m_sensitivity), int(m_sensitivity)) #마우스 감도 설정
 
         self.gravity = 1
@@ -96,6 +105,17 @@ class FirstPersonController(Entity):
     def input(self, key): #키 입력
         if key == str(jump_key):
             self.jump()
+        if key == 't':
+            self.mouselock()
+
+    def mouselock(self):
+        global lock
+        if lock == 0:
+            mouse.locked = True #마우스 움직임 고정 여부 설정
+            lock = 1
+        elif lock == 1:
+            mouse.locked = False
+            lock = 0
 
     def jump(self): #점프 함수
         if not self.grounded:

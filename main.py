@@ -20,7 +20,8 @@ random_sc = 0
 #프로그램 기본 설정
 window.fps_counter.enabled = True
 window.exit_button.enable = True
-mouse.locked = str(m_lock)
+if m_lock == "False": mouse.locked = False#마우스 움직임 고정 여부 설정
+elif m_lock == "True": mouse.locked = True
 
 #콘피그파일 읽기 설정
 section = "move_key"
